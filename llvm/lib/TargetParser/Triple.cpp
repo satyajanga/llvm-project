@@ -384,6 +384,8 @@ StringRef Triple::getEnvironmentTypeName(EnvironmentType Kind) {
     return "pauthtest";
   case LLVM:
     return "llvm";
+  case MTIA:
+    return "mtia";
   }
 
   llvm_unreachable("Invalid EnvironmentType!");

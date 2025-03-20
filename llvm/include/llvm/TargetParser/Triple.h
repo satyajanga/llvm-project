@@ -301,8 +301,8 @@ public:
     OpenHOS,
 
     PAuthTest,
-
-    LastEnvironmentType = PAuthTest
+    MTIA, // Meta's MTIA
+    LastEnvironmentType = MTIA
   };
   enum ObjectFormatType {
     UnknownObjectFormat,

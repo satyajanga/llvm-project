@@ -222,12 +222,29 @@ Status LLDBServerPluginAMDGPU::AttachAmdDbgApi() {
                                       AMD_DBGAPI_STATUS_ERROR);
   }
 
-  // TODO: read the architecture from the attached agent.
+  // Query the architecture from the first attached GPU agent.
   amd_dbgapi_architecture_id_t architecture_id;
-  const uint32_t elf_amdgpu_machine = 0x04C;
-  status = amd_dbgapi_get_architecture(elf_amdgpu_machine, &architecture_id);
+  size_t agent_count = 0;
+  amd_dbgapi_agent_id_t *agents = nullptr;
+  status = amd_dbgapi_process_agent_list(m_gpu_pid, &agent_count, &agents,
+                                         nullptr);
+  if (status != AMD_DBGAPI_STATUS_SUCCESS || agent_count == 0) {
+    if (agents)
+      s_dbgapi_callbacks.deallocate_memory(agents);
+    return HandleAmdDbgApiAttachError(
+        agent_count == 0 ? "No GPU agents found"
+                         : "Failed to enumerate GPU agents",
+        status == AMD_DBGAPI_STATUS_SUCCESS ? AMD_DBGAPI_STATUS_ERROR
+                                            : status);
+  }
+
+  status = amd_dbgapi_agent_get_info(
+      agents[0], AMD_DBGAPI_AGENT_INFO_ARCHITECTURE,
+      sizeof(architecture_id), &architecture_id);
+  s_dbgapi_callbacks.deallocate_memory(agents);
   if (status != AMD_DBGAPI_STATUS_SUCCESS) {
-    return HandleAmdDbgApiAttachError("Failed to get architecture", status);
+    return HandleAmdDbgApiAttachError("Failed to get agent architecture",
+                                      status);
   }
   m_architecture_id = architecture_id;
 

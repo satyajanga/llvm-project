@@ -118,8 +118,8 @@ lldb::addr_t ProcessMockGPU::GetSharedLibraryInfoAddress() {
 size_t ProcessMockGPU::UpdateThreads() {
   if (m_threads.empty()) {
     lldb::tid_t tid = 3456;
-    m_threads.push_back(std::make_unique<ThreadMockGPU>(*this, 3456));
-    // ThreadMockGPU &thread = static_cast<ThreadMockGPU &>(*m_threads.back());
+    lldb::tid_t lane_id = 0;
+    m_threads.push_back(std::make_unique<ThreadMockGPU>(*this, tid, lane_id));
     SetCurrentThreadID(tid);
   }
   return m_threads.size();

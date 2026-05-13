@@ -852,6 +852,9 @@ GetJSONThreadsInfo(NativeProcessProtocol &process, bool abridged) {
 
     thread_obj.try_emplace("tid", static_cast<int64_t>(tid));
 
+    if (std::optional<lldb::tid_t> lane_id = thread.GetLaneID())
+      thread_obj.try_emplace("lane", static_cast<int64_t>(*lane_id));
+
     if (signum != 0)
       thread_obj.try_emplace("signal", signum);
 
@@ -923,6 +926,9 @@ GDBRemoteCommunicationServerLLGS::PrepareStopReplyPacketForThread(
   response.PutCString("thread:");
   AppendThreadIDToResponse(response, process.GetID(), thread.GetID());
   response.PutChar(';');
+
+  if (std::optional<lldb::tid_t> lane_id = thread.GetLaneID())
+    response.Format("lane:{0};", *lane_id);
 
   // Include the thread name if there is one.
   const std::string thread_name = thread.GetName();

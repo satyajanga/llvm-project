@@ -25,6 +25,10 @@ class NativeThreadProtocol {
 public:
   NativeThreadProtocol(NativeProcessProtocol &process, lldb::tid_t tid);
 
+  NativeThreadProtocol(NativeProcessProtocol &process,
+                       lldb::tid_t tid,
+                       lldb::tid_t lane_id);
+
   virtual ~NativeThreadProtocol() = default;
 
   virtual std::string GetName() = 0;
@@ -37,6 +41,7 @@ public:
                              std::string &description) = 0;
 
   lldb::tid_t GetID() const { return m_tid; }
+  std::optional<lldb::tid_t> GetLaneID() const { return m_lane_id; }
 
   NativeProcessProtocol &GetProcess() { return m_process; }
 
@@ -61,6 +66,9 @@ public:
 protected:
   NativeProcessProtocol &m_process;
   lldb::tid_t m_tid;
+  // An optional lane number for the thread used to identify the GPU lane for
+  // this thread object.
+  std::optional<lldb::tid_t> m_lane_id;
 };
 }
 

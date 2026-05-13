@@ -11,8 +11,11 @@
 using namespace lldb_private;
 using namespace lldb_server;
 
-ThreadMockGPU::ThreadMockGPU(ProcessMockGPU &process, lldb::tid_t tid)
-    : NativeThreadProtocol(process, tid), m_reg_context(*this) {
+ThreadMockGPU::ThreadMockGPU(ProcessMockGPU &process,
+                             lldb::tid_t tid,
+                             lldb::tid_t lane_id)
+    : NativeThreadProtocol(process, tid, lane_id),
+      m_reg_context(*this) {
   m_stop_info.reason = lldb::eStopReasonTrace; // lldb::eStopReasonDynamicLoader;
 }
 

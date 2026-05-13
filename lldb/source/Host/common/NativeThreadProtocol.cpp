@@ -18,6 +18,12 @@ NativeThreadProtocol::NativeThreadProtocol(NativeProcessProtocol &process,
                                            lldb::tid_t tid)
     : m_process(process), m_tid(tid) {}
 
+
+NativeThreadProtocol::NativeThreadProtocol(NativeProcessProtocol &process,
+                                           lldb::tid_t tid,
+                                           lldb::tid_t lane_id)
+    : m_process(process), m_tid(tid), m_lane_id(lane_id) {}
+
 bool NativeThreadProtocol::HasValidStopReason() {
   ThreadStopInfo stop_info;
   std::string stop_description;

@@ -1201,7 +1201,8 @@ ObjectFile *Module::GetObjectFile() {
         auto data_sp = m_data_sp;
         m_objfile_sp = ObjectFile::FindPlugin(
             shared_from_this(), &m_file, m_object_offset,
-            file_size - m_object_offset, data_sp, data_offset);
+            m_object_size ? m_object_size : file_size - m_object_offset, 
+            data_sp, data_offset);
         if (m_objfile_sp) {
           // Once we get the object file, update our module with the object
           // file's architecture since it might differ in vendor/os if some

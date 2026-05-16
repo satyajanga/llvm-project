@@ -232,7 +232,7 @@ size_t ObjectFile::GetModuleSpecifications(
                 i)) != nullptr;
        ++i) {
     if (callback(file, data_sp, data_offset, file_offset, file_size, specs) > 0)
-      return specs.GetSize() - initial_count;
+      break;
   }
 
   // Try the ObjectContainer plug-ins
@@ -241,10 +241,9 @@ size_t ObjectFile::GetModuleSpecifications(
             GetObjectContainerGetModuleSpecificationsCallbackAtIndex(i)) !=
        nullptr;
        ++i) {
-    if (callback(file, data_sp, data_offset, file_offset, file_size, specs) > 0)
-      return specs.GetSize() - initial_count;
+    callback(file, data_sp, data_offset, file_offset, file_size, specs);
   }
-  return 0;
+  return specs.GetSize() - initial_count;
 }
 
 ObjectFile::ObjectFile(const lldb::ModuleSP &module_sp,

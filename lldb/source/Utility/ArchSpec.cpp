@@ -13,6 +13,7 @@
 #include "lldb/Utility/StringList.h"
 #include "lldb/lldb-defines.h"
 #include "llvm/ADT/STLExtras.h"
+#include "llvm/ADT/StringSwitch.h"
 #include "llvm/BinaryFormat/COFF.h"
 #include "llvm/BinaryFormat/ELF.h"
 #include "llvm/BinaryFormat/MachO.h"
@@ -1099,6 +1100,83 @@ static llvm::StringRef GetAMDGPUVariantName(uint32_t sub) {
   return llvm::StringRef("unknown");
 }
 
+static ArchSpec::Core GetAMDGPUVariantToCoreR600(llvm::StringRef core_name) {
+  return llvm::StringSwitch<ArchSpec::Core>(core_name)
+      .Case("r600", ArchSpec::eCore_amd_gpu_r600_R600)
+      .Case("r630", ArchSpec::eCore_amd_gpu_r600_R630)
+      .Case("rs880", ArchSpec::eCore_amd_gpu_r600_RS880)
+      .Case("rv670", ArchSpec::eCore_amd_gpu_r600_RV670)
+      .Case("rv710", ArchSpec::eCore_amd_gpu_r600_RV710)
+      .Case("rv730", ArchSpec::eCore_amd_gpu_r600_RV730)
+      .Case("rv770", ArchSpec::eCore_amd_gpu_r600_RV770)
+      .Case("cedar", ArchSpec::eCore_amd_gpu_r600_CEDAR)
+      .Case("cypress", ArchSpec::eCore_amd_gpu_r600_CYPRESS)
+      .Case("juniper", ArchSpec::eCore_amd_gpu_r600_JUNIPER)
+      .Case("redwood", ArchSpec::eCore_amd_gpu_r600_REDWOOD)
+      .Case("sumo", ArchSpec::eCore_amd_gpu_r600_SUMO)
+      .Case("barts", ArchSpec::eCore_amd_gpu_r600_BARTS)
+      .Case("caicos", ArchSpec::eCore_amd_gpu_r600_CAICOS)
+      .Case("cayman", ArchSpec::eCore_amd_gpu_r600_CAYMAN)
+      .Case("turks",  ArchSpec::eCore_amd_gpu_r600_TURKS)
+      .Default(ArchSpec::eCore_amd_gpu_r600_unknown);
+}
+static ArchSpec::Core GetAMDGPUVariantToCoreGCN(llvm::StringRef core_name) {
+  return llvm::StringSwitch<ArchSpec::Core>(core_name)
+      .Case("gfx600", ArchSpec::eCore_amd_gpu_gcn_GFX600)
+      .Case("gfx601", ArchSpec::eCore_amd_gpu_gcn_GFX601)
+      .Case("gfx602", ArchSpec::eCore_amd_gpu_gcn_GFX602)
+      .Case("gfx700", ArchSpec::eCore_amd_gpu_gcn_GFX700)
+      .Case("gfx701", ArchSpec::eCore_amd_gpu_gcn_GFX701)
+      .Case("gfx702", ArchSpec::eCore_amd_gpu_gcn_GFX702)
+      .Case("gfx703", ArchSpec::eCore_amd_gpu_gcn_GFX703)
+      .Case("gfx704", ArchSpec::eCore_amd_gpu_gcn_GFX704)
+      .Case("gfx705", ArchSpec::eCore_amd_gpu_gcn_GFX705)
+      .Case("gfx801", ArchSpec::eCore_amd_gpu_gcn_GFX801)
+      .Case("gfx802", ArchSpec::eCore_amd_gpu_gcn_GFX802)
+      .Case("gfx803", ArchSpec::eCore_amd_gpu_gcn_GFX803)
+      .Case("gfx805", ArchSpec::eCore_amd_gpu_gcn_GFX805)
+      .Case("gfx810", ArchSpec::eCore_amd_gpu_gcn_GFX810)
+      .Case("gfx900", ArchSpec::eCore_amd_gpu_gcn_GFX900)
+      .Case("gfx902", ArchSpec::eCore_amd_gpu_gcn_GFX902)
+      .Case("gfx904", ArchSpec::eCore_amd_gpu_gcn_GFX904)
+      .Case("gfx906", ArchSpec::eCore_amd_gpu_gcn_GFX906)
+      .Case("gfx908", ArchSpec::eCore_amd_gpu_gcn_GFX908)
+      .Case("gfx909", ArchSpec::eCore_amd_gpu_gcn_GFX909)
+      .Case("gfx90a", ArchSpec::eCore_amd_gpu_gcn_GFX90A)
+      .Case("gfx90c", ArchSpec::eCore_amd_gpu_gcn_GFX90C)
+      .Case("gfx942", ArchSpec::eCore_amd_gpu_gcn_GFX942)
+      .Case("gfx950", ArchSpec::eCore_amd_gpu_gcn_GFX950)
+      .Case("gfx1010", ArchSpec::eCore_amd_gpu_gcn_GFX1010)
+      .Case("gfx1011", ArchSpec::eCore_amd_gpu_gcn_GFX1011)
+      .Case("gfx1012", ArchSpec::eCore_amd_gpu_gcn_GFX1012)
+      .Case("gfx1013", ArchSpec::eCore_amd_gpu_gcn_GFX1013)
+      .Case("gfx1030", ArchSpec::eCore_amd_gpu_gcn_GFX1030)
+      .Case("gfx1031", ArchSpec::eCore_amd_gpu_gcn_GFX1031)
+      .Case("gfx1032", ArchSpec::eCore_amd_gpu_gcn_GFX1032)
+      .Case("gfx1033", ArchSpec::eCore_amd_gpu_gcn_GFX1033)
+      .Case("gfx1034", ArchSpec::eCore_amd_gpu_gcn_GFX1034)
+      .Case("gfx1035", ArchSpec::eCore_amd_gpu_gcn_GFX1035)
+      .Case("gfx1036", ArchSpec::eCore_amd_gpu_gcn_GFX1036)
+      .Case("gfx1100", ArchSpec::eCore_amd_gpu_gcn_GFX1100)
+      .Case("gfx1101", ArchSpec::eCore_amd_gpu_gcn_GFX1101)
+      .Case("gfx1102", ArchSpec::eCore_amd_gpu_gcn_GFX1102)
+      .Case("gfx1103", ArchSpec::eCore_amd_gpu_gcn_GFX1103)
+      .Case("gfx1150", ArchSpec::eCore_amd_gpu_gcn_GFX1150)
+      .Case("gfx1151", ArchSpec::eCore_amd_gpu_gcn_GFX1151)
+      .Case("gfx1152", ArchSpec::eCore_amd_gpu_gcn_GFX1152)
+      .Case("gfx1153", ArchSpec::eCore_amd_gpu_gcn_GFX1153)
+      .Case("gfx1200", ArchSpec::eCore_amd_gpu_gcn_GFX1200)
+      .Case("gfx1201", ArchSpec::eCore_amd_gpu_gcn_GFX1201)
+      .Case("gfx1250", ArchSpec::eCore_amd_gpu_gcn_GFX1250)
+      .Case("gfx9-generic", ArchSpec::eCore_amd_gpu_gcn_GFX9_GENERIC)
+      .Case("gfx9-4-generic", ArchSpec::eCore_amd_gpu_gcn_GFX9_4_GENERIC)
+      .Case("gfx10-1-generic", ArchSpec::eCore_amd_gpu_gcn_GFX10_1_GENERIC)
+      .Case("gfx10-3-generic", ArchSpec::eCore_amd_gpu_gcn_GFX10_3_GENERIC)
+      .Case("gfx11-generic", ArchSpec::eCore_amd_gpu_gcn_GFX11_GENERIC)
+      .Case("gfx12-generic", ArchSpec::eCore_amd_gpu_gcn_GFX12_GENERIC)
+      .Default(ArchSpec::eCore_amd_gpu_gcn_unknown);
+}
+
 bool ArchSpec::SetArchitecture(ArchitectureType arch_type, uint32_t cpu,
                                uint32_t sub, uint32_t os) {
   m_core = kCore_invalid;
@@ -1334,6 +1412,16 @@ void ArchSpec::UpdateCore() {
     // can be modified if needed for cases when cores handle both big and
     // little endian
     m_byte_order = core_def->default_byte_order;
+
+    if (m_core == eCore_amd_gpu_gcn_GFX600) {
+      // Need to set the AMD core correctly from the environment.
+      m_core = GetAMDGPUVariantToCoreGCN(
+          m_triple.getEnvironmentName().split('-').second);
+    } else if (m_core == eCore_amd_gpu_r600_R600) {
+      // Need to set the AMD core correctly from the environment.
+      m_core = GetAMDGPUVariantToCoreR600(
+          m_triple.getEnvironmentName().split('-').second);
+    }
   } else {
     Clear();
   }

@@ -786,6 +786,41 @@ enum SectionType {
   eSectionTypeLLDBFormatters,
   eSectionTypeSwiftModules,
   eSectionTypeWasmName,
+  // [NVIDIA] NVGPU corefile sections (from cudacoredump.h CUDBG_SHT_* types)
+  // Added for ProcessNVGPUCore plugin.
+  eSectionTypeNVGPUGlobalMemory,
+  eSectionTypeNVGPUManagedMemory,
+  eSectionTypeNVGPULocalMemory,
+  eSectionTypeNVGPUSharedMemory,
+  eSectionTypeNVGPUParamMemory,
+  eSectionTypeNVGPURegisters,
+  eSectionTypeNVGPUPredicates,
+  eSectionTypeNVGPUUniformRegisters,
+  eSectionTypeNVGPUUniformPredicates,
+  eSectionTypeNVGPURelocatedImage,
+  eSectionTypeNVGPUUnrelocatedImage,
+  eSectionTypeNVGPUBacktrace,
+  eSectionTypeNVGPUDeviceTable,
+  eSectionTypeNVGPUContextTable,
+  eSectionTypeNVGPUSmTable,
+  eSectionTypeNVGPUGridTable,
+  eSectionTypeNVGPUCtaTable,
+  eSectionTypeNVGPUWarpTable,
+  eSectionTypeNVGPULaneTable,
+  eSectionTypeNVGPUModuleTable,
+  eSectionTypeNVGPUConstBankTable,
+  eSectionTypeNVGPUMetadata,
+  eSectionTypeNVGPUConvergenceBarrier,
+  // [NVIDIA] Synthetic per-row container section types for the NVGPU corefile
+  // hierarchy built by ObjectFileELF when e_machine == EM_CUDA &&
+  // GetType() == eTypeCoreFile. Each container's data window is its row in
+  // the parent table section.
+  eSectionTypeNVGPURoot,
+  eSectionTypeNVGPUDevice,
+  eSectionTypeNVGPUSm,
+  eSectionTypeNVGPUCta,
+  eSectionTypeNVGPUWarp,
+  eSectionTypeNVGPULane,
 };
 
 FLAGS_ENUM(EmulateInstructionOptions){

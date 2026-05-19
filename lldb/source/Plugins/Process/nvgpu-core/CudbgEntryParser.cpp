@@ -1,0 +1,182 @@
+//===----------------------------------------------------------------------===//
+//
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
+//
+//===----------------------------------------------------------------------===//
+
+#include "CudbgEntryParser.h"
+
+using namespace lldb;
+using namespace lldb_private;
+
+namespace lldb_private::nvgpu_core {
+
+llvm::Expected<DeviceEntry> DeviceEntry::Decode(const DataExtractor &data,
+                                                offset_t *offset_ptr,
+                                                uint64_t entry_size) {
+  if (!data.ValidOffsetForDataOfSize(*offset_ptr, entry_size))
+    return llvm::createStringError("truncated device table entry");
+  DeviceEntry out{};
+  out.devName = data.GetAddress(offset_ptr);
+  out.devType = data.GetAddress(offset_ptr);
+  out.smType = data.GetAddress(offset_ptr);
+  out.devId = data.GetU32(offset_ptr);
+  out.pciBusId = data.GetU32(offset_ptr);
+  out.pciDevId = data.GetU32(offset_ptr);
+  out.numSMs = data.GetU32(offset_ptr);
+  out.numWarpsPerSM = data.GetU32(offset_ptr);
+  out.numLanesPerWarp = data.GetU32(offset_ptr);
+  out.numRegsPerLane = data.GetU32(offset_ptr);
+  out.numPredicatesPrLane = data.GetU32(offset_ptr);
+  out.smMajor = data.GetU32(offset_ptr);
+  out.smMinor = data.GetU32(offset_ptr);
+  out.instructionSize = data.GetU32(offset_ptr);
+  out.status = data.GetU32(offset_ptr);
+  // Since CUDA driver r400.
+  out.numUniformRegsPrWarp = data.GetU32(offset_ptr);
+  out.numUniformPredicatesPrWarp = data.GetU32(offset_ptr);
+  // Since CUDA driver r575.
+  out.numConvergenceBarriersPrWarp = data.GetU32(offset_ptr);
+  return out;
+}
+
+llvm::Expected<SMEntry> SMEntry::Decode(const DataExtractor &data,
+                                        offset_t *offset_ptr,
+                                        uint64_t entry_size) {
+  if (!data.ValidOffsetForDataOfSize(*offset_ptr, entry_size))
+    return llvm::createStringError("truncated SM table entry");
+  SMEntry out{};
+  out.smId = data.GetU32(offset_ptr);
+  out.padding0 = data.GetU32(offset_ptr);
+  // Since CUDA driver r555.
+  out.exception = data.GetU32(offset_ptr);
+  out.errorPCValid = data.GetU32(offset_ptr);
+  out.errorPC = data.GetAddress(offset_ptr);
+  out.clusterExceptionTargetBlockIdxValid = data.GetU32(offset_ptr);
+  out.clusterExceptionTargetBlockIdxX = data.GetU32(offset_ptr);
+  out.clusterExceptionTargetBlockIdxY = data.GetU32(offset_ptr);
+  out.clusterExceptionTargetBlockIdxZ = data.GetU32(offset_ptr);
+  // Since CUDA driver r580.
+  out.exceptionString = data.GetAddress(offset_ptr);
+  return out;
+}
+
+llvm::Expected<CTAEntry> CTAEntry::Decode(const DataExtractor &data,
+                                          offset_t *offset_ptr,
+                                          uint64_t entry_size) {
+  if (!data.ValidOffsetForDataOfSize(*offset_ptr, entry_size))
+    return llvm::createStringError("truncated CTA table entry");
+  CTAEntry out{};
+  out.gridId64 = data.GetAddress(offset_ptr);
+  out.blockIdxX = data.GetU32(offset_ptr);
+  out.blockIdxY = data.GetU32(offset_ptr);
+  out.blockIdxZ = data.GetU32(offset_ptr);
+  out.padding0 = data.GetU32(offset_ptr);
+  // Since CUDA driver r525.
+  out.clusterIdxX = data.GetU32(offset_ptr);
+  out.clusterIdxY = data.GetU32(offset_ptr);
+  out.clusterIdxZ = data.GetU32(offset_ptr);
+  out.padding1 = data.GetU32(offset_ptr);
+  // Since CUDA driver r565.
+  out.clusterDimX = data.GetU32(offset_ptr);
+  out.clusterDimY = data.GetU32(offset_ptr);
+  out.clusterDimZ = data.GetU32(offset_ptr);
+  return out;
+}
+
+llvm::Expected<WarpEntry> WarpEntry::Decode(const DataExtractor &data,
+                                            offset_t *offset_ptr,
+                                            uint64_t entry_size) {
+  if (!data.ValidOffsetForDataOfSize(*offset_ptr, entry_size))
+    return llvm::createStringError("truncated warp table entry");
+  WarpEntry out{};
+  out.errorPC = data.GetAddress(offset_ptr);
+  out.warpId = data.GetU32(offset_ptr);
+  out.validLanesMask = data.GetU32(offset_ptr);
+  out.activeLanesMask = data.GetU32(offset_ptr);
+  out.isWarpBroken = data.GetU32(offset_ptr);
+  out.errorPCValid = data.GetU32(offset_ptr);
+  out.padding0 = data.GetU32(offset_ptr);
+  // Since CUDA driver r525.
+  out.numRegs = data.GetU32(offset_ptr);
+  out.padding1 = data.GetU32(offset_ptr);
+  // Since CUDA driver r570.
+  out.sharedMemSize = data.GetU32(offset_ptr);
+  out.padding2 = data.GetU32(offset_ptr);
+  // Since CUDA driver r575.
+  out.inSyscallLanesMask = data.GetU32(offset_ptr);
+  out.cbuActiveLanesMask = data.GetU32(offset_ptr);
+  out.cbuExitedLanesMask = data.GetU32(offset_ptr);
+  out.cbuCollectiveLanesMask = data.GetU32(offset_ptr);
+  // Since CUDA driver r590.
+  out.barrierScope = data.GetU32(offset_ptr);
+  out.padding3 = data.GetU32(offset_ptr);
+  out.additionalBarrierInfo = data.GetAddress(offset_ptr);
+  return out;
+}
+
+llvm::Expected<LaneEntry> LaneEntry::Decode(const DataExtractor &data,
+                                            offset_t *offset_ptr,
+                                            uint64_t entry_size) {
+  if (!data.ValidOffsetForDataOfSize(*offset_ptr, entry_size))
+    return llvm::createStringError("truncated lane table entry");
+  LaneEntry out{};
+  out.virtualPC = data.GetAddress(offset_ptr);
+  out.physPC = data.GetAddress(offset_ptr);
+  out.ln = data.GetU32(offset_ptr);
+  out.threadIdxX = data.GetU32(offset_ptr);
+  out.threadIdxY = data.GetU32(offset_ptr);
+  out.threadIdxZ = data.GetU32(offset_ptr);
+  out.exception = data.GetU32(offset_ptr);
+  out.callDepth = data.GetU32(offset_ptr);
+  out.syscallCallDepth = data.GetU32(offset_ptr);
+  out.ccRegister = data.GetU32(offset_ptr);
+  // Since CUDA driver r575.
+  out.cbuThreadState = data.GetU32(offset_ptr);
+  out.padding0 = data.GetU32(offset_ptr);
+  // Since CUDA driver r615.
+  out.rpcLo = data.GetU32(offset_ptr);
+  out.rpcHi = data.GetU32(offset_ptr);
+  return out;
+}
+
+std::string FormatThreadName(const CTAEntry &cta, const LaneEntry &lane) {
+  return nvgpu::FormatThreadName(cta.blockIdxX, cta.blockIdxY, cta.blockIdxZ,
+                                 lane.threadIdxX, lane.threadIdxY,
+                                 lane.threadIdxZ);
+}
+
+uint32_t ComputeAttributedException(const LaneEntry &lane, uint32_t lane_idx,
+                                    lldb::SectionSP warp_section_sp,
+                                    lldb::SectionSP sm_section_sp,
+                                    ObjectFileELF *core) {
+  if (lane.exception != 0)
+    return lane.exception;
+
+  Log *log = GetLog(LLDBLog::Process);
+  llvm::Expected<WarpEntry> warp_or =
+      ReadAndDecode<WarpEntry>(warp_section_sp, core);
+  if (!warp_or) {
+    LLDB_LOG_ERROR(log, warp_or.takeError(),
+                   "Failed to decode GPU warp data while attributing "
+                   "exception to lane {1}: {0}",
+                   lane_idx);
+    return 0;
+  }
+  if (!warp_or->errorPCValid || !warp_or->IsLaneActive(lane_idx))
+    return 0;
+
+  llvm::Expected<SMEntry> sm_or = ReadAndDecode<SMEntry>(sm_section_sp, core);
+  if (!sm_or) {
+    LLDB_LOG_ERROR(log, sm_or.takeError(),
+                   "Failed to decode GPU SM data while attributing "
+                   "exception to lane {1}: {0}",
+                   lane_idx);
+    return 0;
+  }
+  return sm_or->exception;
+}
+
+} // namespace lldb_private::nvgpu_core

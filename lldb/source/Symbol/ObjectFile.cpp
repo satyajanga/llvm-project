@@ -382,6 +382,36 @@ AddressClass ObjectFile::GetAddressClass(addr_t file_addr) {
           case eSectionTypeELFRelocationEntries:
           case eSectionTypeELFDynamicLinkInfo:
           case eSectionTypeWasmName:
+          // [NVIDIA] NVGPU section types for GetAddressClass.
+          case eSectionTypeNVGPUGlobalMemory:
+          case eSectionTypeNVGPUManagedMemory:
+          case eSectionTypeNVGPULocalMemory:
+          case eSectionTypeNVGPUSharedMemory:
+          case eSectionTypeNVGPUParamMemory:
+          case eSectionTypeNVGPURegisters:
+          case eSectionTypeNVGPUPredicates:
+          case eSectionTypeNVGPUUniformRegisters:
+          case eSectionTypeNVGPUUniformPredicates:
+          case eSectionTypeNVGPURelocatedImage:
+          case eSectionTypeNVGPUUnrelocatedImage:
+          case eSectionTypeNVGPUBacktrace:
+          case eSectionTypeNVGPUDeviceTable:
+          case eSectionTypeNVGPUContextTable:
+          case eSectionTypeNVGPUSmTable:
+          case eSectionTypeNVGPUGridTable:
+          case eSectionTypeNVGPUCtaTable:
+          case eSectionTypeNVGPUWarpTable:
+          case eSectionTypeNVGPULaneTable:
+          case eSectionTypeNVGPUModuleTable:
+          case eSectionTypeNVGPUConstBankTable:
+          case eSectionTypeNVGPUMetadata:
+          case eSectionTypeNVGPUConvergenceBarrier:
+          case eSectionTypeNVGPURoot:
+          case eSectionTypeNVGPUDevice:
+          case eSectionTypeNVGPUSm:
+          case eSectionTypeNVGPUCta:
+          case eSectionTypeNVGPUWarp:
+          case eSectionTypeNVGPULane:
           case eSectionTypeOther:
             return AddressClass::eUnknown;
           case eSectionTypeAbsoluteAddress:

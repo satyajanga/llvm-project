@@ -66,6 +66,11 @@ class LldbDriver(DebuggerInterface):
         """Get the current process."""
         return self._process
 
+    def set_target(self, target: lldb.SBTarget):
+        """Update the cached target and process."""
+        self._target = target
+        self._process = target.GetProcess() if target and target.IsValid() else None
+
     def load_core(
         self, core_path: str, executable_path: Optional[str] = None
     ) -> DebuggerResult:
@@ -326,6 +331,18 @@ class LldbDriver(DebuggerInterface):
                     success=False, error_message="No valid frame selected"
                 )
 
+            return self.get_registers_from_frame(frame, register_names)
+
+        except Exception as e:
+            return DebuggerResult(success=False, error_message=str(e))
+
+    def get_registers_from_frame(
+        self,
+        frame: lldb.SBFrame,
+        register_names: Optional[List[str]] = None,
+    ) -> DebuggerResult:
+        """Get register values from a specific LLDB frame."""
+        try:
             registers = {}
             reg_sets = frame.GetRegisters()
 
@@ -336,12 +353,26 @@ class LldbDriver(DebuggerInterface):
                     if register_names is not None and name not in register_names:
                         continue
 
+                    error = reg.GetError()
+                    if error.Fail():
+                        continue
+
+                    # Vector registers do not have a scalar value string here;
+                    # GetValueAsUnsigned() can still return a misleading zero.
+                    if reg.GetValue() is None:
+                        continue
+
+                    byte_size = reg.GetByteSize()
                     try:
                         value = reg.GetValueAsUnsigned()
-                        registers[name] = RegisterValue(name=name, value=value)
                     except:
-                        # Some registers may not be convertible to unsigned
-                        pass
+                        continue
+
+                    registers[name] = RegisterValue(
+                        name=name,
+                        value=value,
+                        size=byte_size,
+                    )
 
             return DebuggerResult(success=True, registers=registers)
 

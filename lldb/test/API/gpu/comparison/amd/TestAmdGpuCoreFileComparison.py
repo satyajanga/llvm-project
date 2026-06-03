@@ -88,6 +88,13 @@ class TestAmdGpuCoreFileComparison(GpuTestCaseBase):
 
     NO_DEBUG_INFO_TESTCASE = True
 
+    def select_gpu(self):
+        """Select the GPU target and keep the LLDB driver state in sync."""
+        lldb_driver = getattr(self, "_active_lldb_driver", None)
+        if lldb_driver:
+            lldb_driver.set_target(self.gpu_target)
+        super().select_gpu()
+
     # ------------------------------------------------------------------
     # Per-core-file setup / teardown helpers
     # ------------------------------------------------------------------
@@ -244,17 +251,62 @@ class TestAmdGpuCoreFileComparison(GpuTestCaseBase):
         gdb_driver, lldb_driver, comparator = self._load_core(core_path)
 
         gdb_result = gdb_driver.get_registers()
+
+        gpu_proc = self.gpu_process
+        if not gpu_proc or not gpu_proc.IsValid():
+            self.skipTest("LLDB GPU target not found")
+
+        self.select_gpu()
         lldb_result = lldb_driver.get_registers()
+        self.assertTrue(
+            lldb_result.success,
+            f"Failed to get LLDB GPU registers: {lldb_result.error_message}",
+        )
 
         self.trace(f"\nGDB registers: {len(gdb_result.registers)}")
         self.trace(f"LLDB registers: {len(lldb_result.registers)}")
 
         comparison = comparator.compare_registers(gdb_result, lldb_result)
 
-        if comparison.differences:
-            self.trace(f"\nRegister differences ({len(comparison.differences)}):")
-            for diff in comparison.differences[:10]:
+        value_mismatches = comparison.differences
+        gdb_only_registers = comparison.gdb_only.get("registers", [])
+        lldb_only_registers = comparison.lldb_only.get("registers", [])
+
+        failure_lines = []
+        if value_mismatches:
+            self.trace(f"\nRegister value mismatches ({len(value_mismatches)}):")
+            failure_lines.append(
+                f"Register value mismatches: {len(value_mismatches)}; first 10:"
+            )
+            for diff in value_mismatches[:10]:
                 self.trace(f"  {diff.description}")
+                failure_lines.append(f"  {diff.description}")
+
+        if gdb_only_registers or lldb_only_registers:
+            self.trace(
+                "\nRegister presence mismatches: "
+                f"GDB-only={len(gdb_only_registers)}, "
+                f"LLDB-only={len(lldb_only_registers)}"
+            )
+
+        if gdb_only_registers:
+            preview = ", ".join(gdb_only_registers[:10])
+            self.trace(f"  GDB-only registers: {preview}")
+            failure_lines.append(
+                f"GDB-only registers: {len(gdb_only_registers)}; first 10: "
+                f"{preview}"
+            )
+
+        if lldb_only_registers:
+            preview = ", ".join(lldb_only_registers[:10])
+            self.trace(f"  LLDB-only registers: {preview}")
+            failure_lines.append(
+                f"LLDB-only registers: {len(lldb_only_registers)}; first 10: "
+                f"{preview}"
+            )
+
+        if failure_lines:
+            self.fail("Register comparison failed:\n" + "\n".join(failure_lines))
 
     def _run_local_variables_comparison(self, core_path):
         """Compare GPU local variables between debuggers for a core file.

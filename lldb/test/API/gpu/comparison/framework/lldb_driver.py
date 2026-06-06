@@ -19,6 +19,11 @@ from .debugger_interface import (
     ModuleInfo,
     StopReason,
 )
+from lldbsuite.test.tools.gpu.gpu_testcase import (
+    CPU_TRIPLE_PATTERNS,
+    GPU_TRIPLE_PATTERNS,
+    find_target_by_triple,
+)
 
 
 class LldbDriver(DebuggerInterface):
@@ -70,6 +75,57 @@ class LldbDriver(DebuggerInterface):
         """Update the cached target and process."""
         self._target = target
         self._process = target.GetProcess() if target and target.IsValid() else None
+
+    def _get_selected_frame(self) -> Optional[lldb.SBFrame]:
+        if self._process.GetNumThreads() == 0:
+            return None
+
+        thread = self._process.GetSelectedThread()
+        if not thread.IsValid():
+            thread = self._process.GetThreadAtIndex(0)
+            self._process.SetSelectedThread(thread)
+
+        frame = thread.GetSelectedFrame()
+        if frame.IsValid():
+            return frame
+
+        if thread.GetNumFrames() > 0:
+            thread.SetSelectedFrame(0)
+            return thread.GetFrameAtIndex(0)
+
+        return None
+
+    def _select_target_by_triple(self, patterns, target_name) -> DebuggerResult:
+        target = find_target_by_triple(self._debugger, patterns)
+        if not target or not target.IsValid():
+            return DebuggerResult(
+                success=False, error_message=f"LLDB {target_name} target not found"
+            )
+
+        self._debugger.SetSelectedTarget(target)
+        self.set_target(target)
+        if not self._process or not self._process.IsValid():
+            return DebuggerResult(
+                success=False, error_message=f"LLDB {target_name} process not found"
+            )
+
+        self._get_selected_frame()
+        return DebuggerResult(
+            success=True,
+            extra_data={"target": target},
+        )
+
+    def select_cpu(self) -> DebuggerResult:
+        """Select the CPU target."""
+        return self._select_target_by_triple(CPU_TRIPLE_PATTERNS, "CPU")
+
+    def select_gpu(self) -> DebuggerResult:
+        """Select the GPU target."""
+        return self._select_target_by_triple(GPU_TRIPLE_PATTERNS, "GPU")
+
+    def get_thread_count(self) -> int:
+        """Get the thread count for the selected target/process."""
+        return self._process.GetNumThreads()
 
     def load_core(
         self, core_path: str, executable_path: Optional[str] = None
@@ -319,14 +375,8 @@ class LldbDriver(DebuggerInterface):
             if not self._process or not self._process.IsValid():
                 return DebuggerResult(success=False, error_message="No valid process")
 
-            thread = self._process.GetSelectedThread()
-            if not thread.IsValid():
-                return DebuggerResult(
-                    success=False, error_message="No valid thread selected"
-                )
-
-            frame = thread.GetSelectedFrame()
-            if not frame.IsValid():
+            frame = self._get_selected_frame()
+            if frame is None or not frame.IsValid():
                 return DebuggerResult(
                     success=False, error_message="No valid frame selected"
                 )
@@ -385,10 +435,8 @@ class LldbDriver(DebuggerInterface):
             if not self._process or not self._process.IsValid():
                 return DebuggerResult(success=False, error_message="No valid process")
 
-            thread = self._process.GetSelectedThread()
-            frame = thread.GetSelectedFrame()
-
-            if not frame.IsValid():
+            frame = self._get_selected_frame()
+            if frame is None or not frame.IsValid():
                 return DebuggerResult(
                     success=False, error_message="No valid frame selected"
                 )
@@ -417,10 +465,8 @@ class LldbDriver(DebuggerInterface):
             if not self._process or not self._process.IsValid():
                 return DebuggerResult(success=False, error_message="No valid process")
 
-            thread = self._process.GetSelectedThread()
-            frame = thread.GetSelectedFrame()
-
-            if not frame.IsValid():
+            frame = self._get_selected_frame()
+            if frame is None or not frame.IsValid():
                 return DebuggerResult(
                     success=False, error_message="No valid frame selected"
                 )

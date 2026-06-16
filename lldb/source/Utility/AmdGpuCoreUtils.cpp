@@ -14,7 +14,7 @@
 using namespace lldb_private;
 
 // Percent-decode a URI component (e.g. "%23" -> "#").
-static std::string PercentDecode(llvm::StringRef str) {
+static std::string DecodeURLPercentSequences(llvm::StringRef str) {
   std::string result;
   result.reserve(str.size());
   for (size_t i = 0, n = str.size(); i < n; ++i) {
@@ -71,7 +71,7 @@ lldb_private::ParseLibraryInfo(const AmdGpuCodeObject &code_object) {
     if (path.empty())
       return std::nullopt;
     // Percent-decode so pathname is the real on-disk path.
-    lib_info.pathname = PercentDecode(path);
+    lib_info.pathname = DecodeURLPercentSequences(path);
     get_offset_and_size(values, lib_info.file_offset, lib_info.file_size);
   } else if (lib_spec.consume_front("memory://")) {
     llvm::StringRef name, values;

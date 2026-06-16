@@ -7,10 +7,27 @@
 //===----------------------------------------------------------------------===//
 
 #include "lldb/Utility/AmdGpuCoreUtils.h"
+#include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/Support/FormatVariadic.h"
 
 using namespace lldb_private;
+
+// Percent-decode a URI component (e.g. "%23" -> "#").
+static std::string DecodeURLPercentSequences(llvm::StringRef str) {
+  std::string result;
+  result.reserve(str.size());
+  for (size_t i = 0, n = str.size(); i < n; ++i) {
+    if (str[i] == '%' && i + 2 < n && llvm::isHexDigit(str[i + 1]) &&
+        llvm::isHexDigit(str[i + 2])) {
+      result.push_back(llvm::hexFromNibbles(str[i + 1], str[i + 2]));
+      i += 2;
+    } else {
+      result.push_back(str[i]);
+    }
+  }
+  return result;
+}
 
 std::optional<GPUDynamicLoaderLibraryInfo>
 lldb_private::ParseLibraryInfo(const AmdGpuCodeObject &code_object) {
@@ -53,7 +70,8 @@ lldb_private::ParseLibraryInfo(const AmdGpuCodeObject &code_object) {
     std::tie(path, values) = lib_spec.split('#');
     if (path.empty())
       return std::nullopt;
-    lib_info.pathname = path.str();
+    // Percent-decode so pathname is the real on-disk path.
+    lib_info.pathname = DecodeURLPercentSequences(path);
     get_offset_and_size(values, lib_info.file_offset, lib_info.file_size);
   } else if (lib_spec.consume_front("memory://")) {
     llvm::StringRef name, values;

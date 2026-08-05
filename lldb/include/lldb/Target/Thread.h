@@ -1151,6 +1151,9 @@ public:
   std::optional<lldb::tid_t> GetSIMD() const { return m_simd; }
   void SetSIMD(std::optional<lldb::tid_t> simd) { m_simd = simd; }
 
+  bool GetIsActive() const { return m_active; }
+  void SetIsActive(bool b) { m_active = b; }
+
   lldb::ThreadGroupSP GetSIMDThreadGroup() const;
 
   // Get the originating thread's index ID.
@@ -1428,6 +1431,17 @@ protected:
   std::optional<lldb::tid_t> m_lane_id;
   /// The GPU lane SIMD groupd ID (wave/warp/core), if any.
   std::optional<lldb::tid_t> m_simd;
+  /// Set to false if this thread is not active.
+  ///
+  /// This can be used for GPU lanes to indicate that a lane is not active.
+  /// Single stepping will want to step until a thread is active again when
+  /// doing source level single stepping.
+  ///
+  /// This can also be used for software threads from operating system plug-ins
+  /// that are visible but can't be stepping yet. They can set a breakpoint on
+  /// the PC and when the software thread gets contexted switched back onto a
+  /// real thread, stepping can be resumed.
+  bool m_active = false;
 
 private:
   bool m_extended_info_fetched; // Have we tried to retrieve the m_extended_info

@@ -41,6 +41,8 @@ public:
   lldb::tid_t GetID() const { return m_tid; }
   std::optional<lldb::tid_t> GetLaneID() const { return m_lane_id; }
   std::optional<lldb::tid_t> GetSIMD() const { return m_simd_id; }
+  bool GetIsActive() const { return m_active; }
+  void SetIsActive(bool b) { m_active = b; }
   NativeProcessProtocol &GetProcess() { return m_process; }
 
   // Thread-specific watchpoints
@@ -70,6 +72,10 @@ protected:
   /// An optional SIMD group ID for the thread used to identify the GPU SIMD.
   /// This can be used to identify the ID of the wave or warp for the lane.
   std::optional<lldb::tid_t> m_simd_id;
+  /// Set to false if this thread is not active. This can be used to indicate
+  /// that a GPU lane is not active. When single stepping this can be used to
+  /// step until the thread becomes active again.
+  bool m_active = true;
 };
 }
 

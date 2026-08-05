@@ -122,6 +122,8 @@ size_t ProcessMockGPU::UpdateThreads() {
     lldb::tid_t simd_id = 1;
     m_threads.push_back(
         std::make_unique<ThreadMockGPU>(*this, tid, lane_id, simd_id));
+    // Set the thread to inactive to verify gets sent back to LLDB.
+    m_threads.back()->SetIsActive(false);
     SetCurrentThreadID(tid);
   }
   return m_threads.size();

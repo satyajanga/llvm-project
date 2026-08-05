@@ -858,6 +858,9 @@ GetJSONThreadsInfo(NativeProcessProtocol &process, bool abridged) {
     if (std::optional<lldb::tid_t> simd_id = thread.GetSIMD())
       thread_obj.try_emplace("simd", static_cast<int64_t>(*simd_id));
 
+    if (!thread.GetIsActive())
+      thread_obj.try_emplace("inactive", true);
+
     if (signum != 0)
       thread_obj.try_emplace("signal", signum);
 
@@ -935,6 +938,9 @@ GDBRemoteCommunicationServerLLGS::PrepareStopReplyPacketForThread(
 
   if (std::optional<lldb::tid_t> simd_id = thread.GetSIMD())
     response.Format("simd:{0};", *simd_id);
+
+  if (!thread.GetIsActive())
+    response.PutCString("inactive;");
 
   // Include the thread name if there is one.
   const std::string thread_name = thread.GetName();

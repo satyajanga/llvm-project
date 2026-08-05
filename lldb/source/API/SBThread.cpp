@@ -1368,3 +1368,12 @@ SBValue SBThread::GetSiginfo() {
     return SBValue();
   return thread_sp->GetSiginfoValue();
 }
+
+bool SBThread::IsActive() const {
+  LLDB_INSTRUMENT_VA(this);
+
+  ThreadSP thread_sp = m_opaque_sp->GetThreadSP();
+  if (!thread_sp)
+    return false;
+  return thread_sp->GetIsActive();
+}

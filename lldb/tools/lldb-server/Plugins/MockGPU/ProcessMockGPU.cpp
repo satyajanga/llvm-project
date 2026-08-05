@@ -119,7 +119,9 @@ size_t ProcessMockGPU::UpdateThreads() {
   if (m_threads.empty()) {
     lldb::tid_t tid = 3456;
     lldb::tid_t lane_id = 0;
-    m_threads.push_back(std::make_unique<ThreadMockGPU>(*this, tid, lane_id));
+    lldb::tid_t simd_id = 1;
+    m_threads.push_back(
+        std::make_unique<ThreadMockGPU>(*this, tid, lane_id, simd_id));
     SetCurrentThreadID(tid);
   }
   return m_threads.size();

@@ -2397,6 +2397,11 @@ public:
 
   ThreadList &GetThreadList() { return m_thread_list; }
 
+  /// Given a thread ID, return the SIMD thread group that contains it.
+  /// If the thread is not in a SIMD thread group, return an invalid shared
+  /// pointer.
+  lldb::ThreadGroupSP GetSIMDThreadGroup(lldb::tid_t simd_id);
+
   StopPointSiteList<lldb_private::WatchpointResource> &
   GetWatchpointResourceList() {
     return m_watchpoint_resource_list;
@@ -3471,6 +3476,9 @@ protected:
   StructuredData::DictionarySP m_crash_info_dict_sp;
 
   std::vector<AddressSpaceInfo> m_address_spaces;
+
+  std::map<lldb::tid_t, lldb::ThreadGroupSP> m_simd_thread_group_map;
+  std::mutex m_simd_thread_group_map_mutex;
 
   size_t RemoveBreakpointOpcodesFromBuffer(lldb::addr_t addr, size_t size,
                                            uint8_t *buf) const;

@@ -24,8 +24,8 @@ class ThreadMockGPU : public NativeThreadProtocol {
   friend class ProcessMockGPU;
 
 public:
-  ThreadMockGPU(ProcessMockGPU &process, lldb::tid_t tid,
-                lldb::tid_t lane_id);
+  ThreadMockGPU(ProcessMockGPU &process, lldb::tid_t tid, lldb::tid_t lane_id,
+                lldb::tid_t simd_id);
 
   // NativeThreadProtocol Interface
   std::string GetName() override;

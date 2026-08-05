@@ -1146,6 +1146,13 @@ public:
   std::optional<lldb::tid_t> GetLaneID() const { return m_lane_id; }
   void SetLaneID(std::optional<lldb::tid_t> lane_id) { m_lane_id = lane_id; }
 
+  // An optional SIMD group ID for the thread used to identify the GPU wave or
+  // warp for this thread object.
+  std::optional<lldb::tid_t> GetSIMD() const { return m_simd; }
+  void SetSIMD(std::optional<lldb::tid_t> simd) { m_simd = simd; }
+
+  lldb::ThreadGroupSP GetSIMDThreadGroup() const;
+
   // Get the originating thread's index ID.
   // In the case of an "extended" thread -- a thread which represents the stack
   // that enqueued/spawned work that is currently executing -- we need to
@@ -1417,7 +1424,10 @@ protected:
   /// The Scripted Frame Provider, if any.
   lldb::SyntheticFrameProviderSP m_frame_provider_sp;
 
+  /// The GPU lane ID, if any.
   std::optional<lldb::tid_t> m_lane_id;
+  /// The GPU lane SIMD groupd ID (wave/warp/core), if any.
+  std::optional<lldb::tid_t> m_simd;
 
 private:
   bool m_extended_info_fetched; // Have we tried to retrieve the m_extended_info

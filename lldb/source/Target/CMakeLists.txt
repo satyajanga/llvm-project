@@ -53,6 +53,8 @@ add_lldb_library(lldbTarget
   Target.cpp
   TargetList.cpp
   Thread.cpp
+  ThreadGroup.cpp
+  ThreadGroupSIMD.cpp
   ThreadCollection.cpp
   ThreadList.cpp
   ThreadPlan.cpp

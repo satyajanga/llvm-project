@@ -245,6 +245,7 @@ class TargetList;
 class TargetProperties;
 class Thread;
 class ThreadCollection;
+class ThreadGroup;
 class ThreadList;
 class ThreadPlan;
 class ThreadPlanBase;
@@ -469,6 +470,7 @@ typedef std::shared_ptr<lldb_private::Target> TargetSP;
 typedef std::weak_ptr<lldb_private::Target> TargetWP;
 typedef std::shared_ptr<lldb_private::Thread> ThreadSP;
 typedef std::weak_ptr<lldb_private::Thread> ThreadWP;
+typedef std::shared_ptr<lldb_private::ThreadGroup> ThreadGroupSP;
 typedef std::shared_ptr<lldb_private::ThreadCollection> ThreadCollectionSP;
 typedef std::shared_ptr<lldb_private::ThreadPlan> ThreadPlanSP;
 typedef std::shared_ptr<lldb_private::ThreadPostMortemTrace>

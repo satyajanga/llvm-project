@@ -2188,3 +2188,12 @@ lldb::ValueObjectSP Thread::GetSiginfoValue() {
     process_sp->GetByteOrder(), arch.GetAddressByteSize()};
   return ValueObjectConstResult::Create(&target, type, ConstString("__lldb_siginfo"), data_extractor);
 }
+
+lldb::ThreadGroupSP Thread::GetSIMDThreadGroup() const {
+  ProcessSP process_sp = GetProcess();
+  if (process_sp) {
+    if (std::optional<lldb::tid_t> simd_id = GetSIMD())
+      return process_sp->GetSIMDThreadGroup(*simd_id);
+  }
+  return {};
+}

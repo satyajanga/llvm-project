@@ -105,6 +105,10 @@ public:
 
   virtual bool RegisterIsVolatile(const RegisterInfo *reg_info) = 0;
 
+  virtual bool RegisterIsSIMDScoped(const RegisterInfo *reg_info) {
+    return false;
+  }
+
   virtual bool GetFallbackRegisterLocation(
       const RegisterInfo *reg_info,
       UnwindPlan::Row::AbstractRegisterLocation &unwind_regloc);

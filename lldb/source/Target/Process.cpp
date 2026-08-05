@@ -60,6 +60,7 @@
 #include "lldb/Target/Target.h"
 #include "lldb/Target/TargetList.h"
 #include "lldb/Target/Thread.h"
+#include "lldb/Target/ThreadGroupSIMD.h"
 #include "lldb/Target/ThreadPlan.h"
 #include "lldb/Target/ThreadPlanBase.h"
 #include "lldb/Target/ThreadPlanCallFunction.h"
@@ -7052,4 +7053,20 @@ Process::GetAddressSpaceInfo(uint64_t address_space_id) {
       return address_space_info;
   }
   return llvm::createStringError("invalid address space id");
+}
+
+lldb::ThreadGroupSP Process::GetSIMDThreadGroup(lldb::tid_t simd_id) {
+  std::lock_guard<std::mutex> guard(m_simd_thread_group_map_mutex);
+  auto pos = m_simd_thread_group_map.find(simd_id);
+  if (pos != m_simd_thread_group_map.end())
+    return pos->second;
+  // If we don't have a thread group for this SIMD ID, create one.
+  lldb::ThreadGroupSP thread_group_sp(
+      new ThreadGroupSIMD(this->shared_from_this(), simd_id));
+  for (auto thread_sp : m_process->Threads()) {
+    if (thread_sp->GetSIMD() == simd_id)
+      thread_group_sp->AddThread(thread_sp);
+  }
+  m_simd_thread_group_map[simd_id] = thread_group_sp;
+  return thread_group_sp;
 }

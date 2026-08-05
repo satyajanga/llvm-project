@@ -23,11 +23,9 @@ namespace lldb_private {
 // NativeThreadProtocol
 class NativeThreadProtocol {
 public:
-  NativeThreadProtocol(NativeProcessProtocol &process, lldb::tid_t tid);
-
-  NativeThreadProtocol(NativeProcessProtocol &process,
-                       lldb::tid_t tid,
-                       lldb::tid_t lane_id);
+  NativeThreadProtocol(NativeProcessProtocol &process, lldb::tid_t tid,
+                       std::optional<lldb::tid_t> lane_id = std::nullopt,
+                       std::optional<lldb::tid_t> simd_id = std::nullopt);
 
   virtual ~NativeThreadProtocol() = default;
 
@@ -42,7 +40,7 @@ public:
 
   lldb::tid_t GetID() const { return m_tid; }
   std::optional<lldb::tid_t> GetLaneID() const { return m_lane_id; }
-
+  std::optional<lldb::tid_t> GetSIMD() const { return m_simd_id; }
   NativeProcessProtocol &GetProcess() { return m_process; }
 
   // Thread-specific watchpoints
@@ -69,6 +67,9 @@ protected:
   // An optional lane number for the thread used to identify the GPU lane for
   // this thread object.
   std::optional<lldb::tid_t> m_lane_id;
+  /// An optional SIMD group ID for the thread used to identify the GPU SIMD.
+  /// This can be used to identify the ID of the wave or warp for the lane.
+  std::optional<lldb::tid_t> m_simd_id;
 };
 }
 
